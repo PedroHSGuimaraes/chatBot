@@ -40,7 +40,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
-const port: number = 3000;
+const port: number | string = process.env.PORT || 3000;
 
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`);
