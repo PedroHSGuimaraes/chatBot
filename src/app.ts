@@ -50,7 +50,9 @@ app.post(
     const to: string = twilioRequestBody.From;
 
     try {
-      const completion = await openaiService.getOpenAICompletion(messageBody);
+      const completion: string = await openaiService.getOpenAICompletion(
+        messageBody
+      );
       await twilioService.sendWhatsAppMensseger(to, completion);
       res.status(200).json({ success: true, body: messageBody });
     } catch (error: unknown) {
