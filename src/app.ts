@@ -6,6 +6,8 @@ import express, { Application, Request, Response } from "express";
 
 import TwilioServices, { ItwilioConfig } from "./services/twilio.service";
 
+import openaiService from "./services/openai.service";
+
 const app: Application = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -43,14 +45,13 @@ app.post(
   "/chat/receive",
   async (req: Request, res: Response): Promise<void> => {
     const twilioRequestBody: any = req.body;
-    console.log("app.post ➜ twilioRequestBody:", twilioRequestBody);
     const messageBody: string = twilioRequestBody.Body;
-    console.log("app.post ➜  messageBody:", messageBody);
 
     const to: string = twilioRequestBody.From;
 
     try {
-      await twilioService.sendWhatsAppMensseger(to, messageBody);
+      const completion = await openaiService.getOpenAICompletion(messageBody);
+      await twilioService.sendWhatsAppMensseger(to, completion);
       res.status(200).json({ success: true, body: messageBody });
     } catch (error: unknown) {
       console.error(error);
