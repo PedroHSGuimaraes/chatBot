@@ -1,6 +1,6 @@
 import twilio, { Twilio } from "twilio";
 
-interface ItwilioConfig {
+export interface ItwilioConfig {
   accountSid: string;
   authToken: string;
 }

@@ -1,10 +1,10 @@
 import "dotenv/config";
 import cors from "cors";
+import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import express, { Application, Request, Response } from "express";
 
-import TwilioServices from "./services/twilio.service";
-import dotenv from "dotenv";
+import TwilioServices, { ItwilioConfig } from "./services/twilio.service";
 
 const app: Application = express();
 
@@ -14,14 +14,17 @@ app.use(cors());
 
 dotenv.config();
 
-const twilioConfig = {
+const twilioConfig: ItwilioConfig = {
   accountSid: process.env.ACCOUNT_SID as string,
   authToken: process.env.AUTH_TOKEN as string,
 };
-const whatsAppNumber = process.env.WHATSAPP_NUMBER as string;
-const twilioService = new TwilioServices(twilioConfig, whatsAppNumber);
+const whatsAppNumber: string = process.env.WHATSAPP_NUMBER as string;
+const twilioService: TwilioServices = new TwilioServices(
+  twilioConfig,
+  whatsAppNumber
+);
 
-app.post("/chat/send", async (req: Request, res: Response) => {
+app.post("/chat/send", async (req: Request, res: Response): Promise<void> => {
   const { to, body } = req.body;
   try {
     await twilioService.sendWhatsAppMensseger(`whatsapp:${to}`, body);
@@ -30,15 +33,30 @@ app.post("/chat/send", async (req: Request, res: Response) => {
       "app.post ➜ twilioService.sendWhatsAppMensseger:",
       twilioService.sendWhatsAppMensseger(`whatsapp:${to}`, body)
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
     res.status(500).json({ success: false, error });
   }
 });
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
-});
+app.post(
+  "/chat/receive",
+  async (req: Request, res: Response): Promise<void> => {
+    const twilioRequestBody: any = req.body;
+    console.log("app.post ➜ twilioRequestBody:", twilioRequestBody);
+    const messageBody: string = twilioRequestBody.Body;
+    console.log("app.post ➜  messageBody:", messageBody);
+
+    const to: string = twilioRequestBody.From;
+
+    try {
+      await twilioService.sendWhatsAppMensseger(to, messageBody);
+      res.status(200).json({ success: true, body: messageBody });
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  }
+);
 
 const port: number | string = process.env.PORT || 3000;
 
